@@ -38,11 +38,6 @@ Read and understand https://raw.githubusercontent.com/intent-driven-dev/intent-d
   implementation lands on `main` before archive.
 - OpenCode skills for repeatable collaboration and implementation workflows,
   including C4 diagrams, ADR authoring, and OpenSpec lifecycle commands.
-- Superpowers from https://github.com/obra/superpowers for guided practices such
-  as brainstorming, planning, debugging, verification, worktrees, and
-  subagent-driven parallel work.
-- Superpowers can be disabled by removing the `superpowers@git+https://github.com/obra/superpowers.git`
-  entry from the `plugin` array in `opencode.json`, then restarting OpenCode.
 - A bundled `test-driven-development` skill plus `senior-dev` and `senior-qa`
   subagents in `.opencode/agent/` for test-first implementation and
   acceptance-test work, routed via the `context` block in `openspec/config.yaml`.
@@ -54,6 +49,24 @@ Read and understand https://raw.githubusercontent.com/intent-driven-dev/intent-d
 
 The bundled OpenSpec schema is a local copy of the `intent-driven` schema from
 https://github.com/intent-driven-dev/openspec-schemas/tree/main/openspec/schemas/intent-driven.
+
+## Optional: Enable Superpowers
+
+[Superpowers](https://github.com/obra/superpowers) provides guided practices such
+as brainstorming, planning, debugging, verification, worktrees, and
+subagent-driven parallel work. It is not enabled by default in this template.
+
+To enable it, add the plugin entry to `opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+}
+```
+
+If your configuration already has a `plugin` array, append the entry while
+preserving your existing plugins and other settings. Restart OpenCode to load it.
 
 ## Workflow
 
