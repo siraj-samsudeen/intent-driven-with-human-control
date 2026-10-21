@@ -80,6 +80,15 @@ Predict: <the human's prediction>
 Actual: <the real assertion lines> ✗ — <why it differed>
 ```
 ```
+test: <behaviour>
+
+Predict: passes — <why the behaviour already exists>
+Actual: <N pass, 0 fail> ✓ — <the mutant it kills, or what would make it fail>
+```
+A `test:` commit is for a test that passes on its first run — a ratified behaviour, or one an
+earlier green already delivered. With no red, its proof is what it guards: name the surviving
+mutant it kills, or the change that would make it fail.
+```
 green: <same subject as its red>
 
 Green: <command> → <N pass, 0 fail>
@@ -134,10 +143,14 @@ Then `openspec verify`, and archive.
 ## Tooling gotchas (Bun 1.4.2, verified 21-Oct-2026)
 
 - A `coverageThreshold` failure exits 1 **with no message**, under "0 fail".
-- knip needs `"entry": ["**/*.test.ts"]` when tests are the only entry points; otherwise it
-  reports every file as unused.
+- knip needs `"entry": ["**/*.test.ts"]` when tests are the only entry points (otherwise it
+  reports every file as unused), and `ignoreDependencies` for the Stryker packages (it cannot
+  see `appendPlugins`).
 - Stryker: use `@hughescr/stryker-bun-runner`, listed in `appendPlugins` with every other
-  plugin (Bun workspaces hide plugins behind symlinks). Run **without** the TypeScript checker
-  — Stryker cannot run on TypeScript 7, and TypeScript 5 cannot type drizzle-typebox.
+  plugin (Bun workspaces hide plugins behind symlinks). `bun init` installs TypeScript 7, which
+  Stryker cannot use: skip the TypeScript checker, and set `tsconfigFile` to a file that does
+  not exist so Stryker does not rewrite `tsconfig.json` (only needed when it `extends` a
+  relative path). Add `ignorePatterns: [".claude", ".agents", ".opencode", "openspec"]` — the
+  symlinked skills break its sandbox copy.
 - Give each test its own database (`:memory:` or a temp file). A shared file under parallel
   Stryker workers produces false kills.
