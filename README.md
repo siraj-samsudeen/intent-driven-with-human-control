@@ -1,3 +1,49 @@
+# Intent-Driven With Human Control
+
+A fork of [intent-driven-dev/intent-driven-template](https://github.com/intent-driven-dev/intent-driven-template)
+for Claude Code, with one change of philosophy: **the human approves every step**, and the git
+history records each step well enough that a reviewer — or a learner — can follow exactly how
+the code was built.
+
+The upstream template brings the human in at the beginning (intent, specs, design) and at the
+end (review); agents do the implementation in between. Here the planning is unchanged, but the
+build runs one test at a time, in the manner of Kent Beck's augmented coding.
+
+## Sources
+
+1. **Intent-driven template** — everything upstream: the OpenSpec `proposal → specs → design →
+   adr → tasks` workflow, Gherkin-style scenarios, and its skills and agents. Kept as is.
+2. **Kent Beck, [Augmented Coding: Beyond the Vibes](https://tidyfirst.substack.com/p/augmented-coding-beyond-the-vibes)**
+   (25-Jun-2025) — the human says "go" and the agent takes the next test from the plan; Tidy
+   First (structural changes in their own commits); and his warning signs: loops, functionality
+   nobody asked for, tests disabled or deleted.
+
+## What we changed, and why
+
+| Change | Why |
+|---|---|
+| **The human approves every step**, planning and build alike. Planning: the agent drafts each artifact, the human reviews and edits, one commit per artifact. | The person working with the agent must understand and own every step, not just the result. |
+| **`tasks.md` is the test list** — one group per scenario, the outer acceptance test first, then the inner tests; no setup tasks. | It is Beck's `plan.md`. Setup that arrives with the test that needs it can be traced to that test; setup planned up front cannot. |
+| **One test per "go"**, with **red, green and refactor as separate commits**. | Each step can be checked out and replayed. A combined commit cannot show that the test failed first, or how. |
+| **We commit the red** — unlike Beck, who commits only when all tests pass. | The failing test, the prediction and the real failure are the record we want. |
+| **The commit message carries what the code cannot show** — the command run, the prediction, the actual output, what was deliberately not built. | Diffs show what changed, never why or how it was decided. A separate diary drifts and costs more than a commit message. |
+| **The human predicts every red; the agent predicts only when the human says "don't know"** (with a reason). A match is one line; a mismatch is recorded with why. | The human's prediction is the moment they model the system instead of watching it. The agent's prediction is almost always right and almost never informative — recorded every time, it buries the lines that matter. |
+| **Prediction accuracy sets the step size.** | Predictions that always match mean the steps are too small; frequent misses mean slow down. |
+| **Every change is mandated by a test** — code, dependencies, files. Config no test can drive states `Breaks without it:`. | Nothing arrives that nobody needed. |
+| **`design.md` is a hypothesis.** When the build leads elsewhere, a `design:` commit records what changed and why. | That the plan changed, and why, is one of the most useful pages in the history. |
+| **Reconcile at the end of each change**: coverage, unused code (knip), types, mutation testing (Stryker). Every finding is ratified into the spec, deleted, or put to the human. | Agents build more than they are asked. Line coverage cannot see an untested one-line branch; mutation testing can. |
+| **Formats are enforced by review, not a git hook** — for now. | We will learn which fields hold up after 100–200 commits, then decide what to enforce. |
+
+The process itself lives in [`.agents/skills/outside-in-tdd/SKILL.md`](.agents/skills/outside-in-tdd/SKILL.md);
+the build-phase changes to the schema in
+[`openspec/schemas/intent-driven-with-human-control/`](openspec/schemas/intent-driven-with-human-control/).
+Claude Code wiring: `CLAUDE.md`, `.claude/skills/` (links to the upstream skills) and
+`.claude/agents/`.
+
+---
+
+*The upstream README follows.*
+
 # Intent-Driven Template
 
 An [OpenSpec](https://github.com/Fission-AI/OpenSpec) and [OpenCode](https://opencode.ai/) template with the `proposal -> specs -> design -> adr -> tasks` workflow enabled, plus optional collaboration workflows for teams that choose to adopt them.
