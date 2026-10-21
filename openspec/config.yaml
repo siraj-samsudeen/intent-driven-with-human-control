@@ -1,4 +1,4 @@
-schema: intent-driven
+schema: intent-driven-with-human-control
 
 #   context: |
 #     Tech stack: TypeScript, React, Node.js
