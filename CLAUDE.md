@@ -12,5 +12,25 @@ of the template's files:
 ## Human control
 
 Every change — planning artifacts, code, tests, dependencies, config — follows the
-`outside-in-tdd` skill: one step at a time, the human approves each one, and each step is its
-own commit.
+`outside-in-tdd` skill: each step is its own commit, and the agent stops only when the human has
+something to decide (a draft to review, a real decision, a prediction).
+
+## Defaults — never ask
+
+Formatting and tooling choices are not questions for the human:
+
+- Diagrams: Mermaid, lightweight C4-inspired.
+- ADRs: MADR minimal (`.agents/skills/architectural-decision-records/preferences.md`).
+- Acceptance-test stack: javascript (`stack:` in `openspec/config.yaml`).
+
+## Git — overrides `openspec-git-discipline`
+
+A change lives on its own branch until it is **completely** done — planning, code, reconcile,
+verify and archive — and reaches the trunk in **one PR** at the end. So, where
+`openspec-git-discipline` says `main`:
+
+- Apply does not wait for the proposal to reach the trunk; everything stays on the change branch.
+- Archive runs on the change branch as its last commit, before the PR.
+- The trunk is the branch named in this file's project section (`main` if none is named). Working
+  directly on the trunk is fine for a single person.
+- Approving a step is the user asking for its commit — do not ask again.
