@@ -27,6 +27,7 @@ operations:
   apply:
     guidance:
       - Must use test-driven-development skill
+      - Must use outside-in-tdd skill - one task per "go", the human approves every step
   archive:
     guidance:
       - Must run OpenSpec Sync before archiving
