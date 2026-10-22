@@ -1,27 +1,30 @@
 schema: intent-driven-with-human-control
 stack: javascript
 
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
-#
-#     Use senior-dev sub-agent for all src related work and senior-qa for acceptance tests.
-#     Do not optimize the batch the tasks for senior-dev and senior-qa, call them as many times as necessary in smaller batches as dev and qa work may be interleaved.
+# context: |   # injected into every artifact's instructions, sub-agents included; fill in per project
+#   Tech stack: <runtime, framework, test runner>. Everything else arrives with the test that needs it.
+#   Domain: <what is being built>.
+#   Commits follow the outside-in-tdd skill's formats, not conventional commits.
+#   Do the work in the main session: the human stops every step, so never hand implementation to
+#   sub-agents.
 
 rules:
   proposal:
-    - Must use grill-me skill
+    - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     # - Must use adversarial-authoring skill
     # - Must use glossary skill
   design:
+    - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     - Must use c4-diagrams skill - Mermaid, lightweight C4-inspired; do not ask
     # - Must use glossary skill
   adr:
+    - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     - Must use architectural-decision-records skill
-  specs: []   # empty list, not null; to opt in, replace [] with the line below
+  specs:
+    - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     # - Must use spec-as-source skill
-  tasks: []   # empty list, not null; to opt in, replace [] with the line below
+  tasks:
+    - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     # - Must use spec-as-source skill
 
 operations:

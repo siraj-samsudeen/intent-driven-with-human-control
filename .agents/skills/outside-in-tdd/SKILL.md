@@ -78,9 +78,14 @@ of each test; this skill adds the stops and the record.
 2. **Predict.** The human says what will happen when it runs. "Don't know" is a valid answer;
    silence is not. The agent predicts only when the human says "don't know" or asks — then with
    a one-line reason.
-3. **Run it.** Paste the real failure lines, never a summary. If it fails for the wrong reason
-   (a missing module, a typo), fix the test or add the smallest stub and run again.
-4. **Commit `red:`** — the test plus the smallest stub only.
+3. **Run it, and commit the run.** Paste the real failure lines, never a summary, and commit the
+   run as `red: <behaviour> (run N)` with its prediction, the actual lines and a `Mandates:` line —
+   what this failure demands next. Every run, including runs that fail for the wrong reason (a
+   missing package or module, a typo). Then add the smallest stub the mandate asks for (shown as a
+   command first in learning mode), ask for the next prediction, and run again; the stub goes in
+   the next run's commit, under `Ran:`.
+4. **The last red** is the run that fails for the right reason — the behaviour is missing, and
+   nothing else. Its `Mandates:` points at the green.
 5. **Write the minimal code** and run the suite — no stop; show the diff with the result.
 6. **Commit `green:`** — code only, no test changes. For the outer test or a change to shared
    code, ask the human to predict the suite result first.
@@ -100,6 +105,16 @@ ones. If they keep missing, slow down.
 
 ## Commit formats
 
+```
+red: <behaviour> (run N)
+
+Ran: <install or stub commands since the previous run — omit on run 1>
+Predict: <the human's prediction>
+Actual: <the real failure lines> ✓ | ✗ — <why it differed>
+Mandates: <what this failure demands next>
+```
+Every run of a red gets this commit. The variants below show the Predict/Actual lines for the
+other cases; each still carries `(run N)`, `Ran:` and `Mandates:`.
 ```
 red: <behaviour in plain words>
 
@@ -159,7 +174,8 @@ Ran: <exact generator or install commands>
 - These formats are enforced by review, not a hook. Revisit after 100–200 commits, when we know
   which fields hold up.
 - **Diverges from Kent Beck on purpose:** Beck commits only when all tests pass. We commit the
-  red, because the prediction and the observed failure are the record we want.
+  red, because the prediction and the observed failure are the record we want. We commit every
+  run, not just the final red: the chain of failures shows why each file, package and stub exists.
 
 ## Stop when you see (Kent Beck's warning signs)
 
@@ -192,5 +208,10 @@ Then `openspec verify`, and archive.
   not exist so Stryker does not rewrite `tsconfig.json` (only needed when it `extends` a
   relative path). Add `ignorePatterns: [".claude", ".agents", ".opencode", "openspec"]` — the
   symlinked skills break its sandbox copy.
+- Browser tests: use Playwright as a **library** (`playwright`) inside `bun test`, starting the app
+  in the same process (`createApp().listen(0)` per test), so the server code counts towards
+  coverage and Stryker. Playwright's own runner (`@playwright/test`) starts the server in another
+  process, invisible to both, and needs Node. `bun:test`'s `expect` does not retry: wait for each
+  page load explicitly.
 - Give each test its own database (`:memory:` or a temp file). A shared file under parallel
   Stryker workers produces false kills.
