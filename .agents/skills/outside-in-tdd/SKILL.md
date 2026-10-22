@@ -33,6 +33,27 @@ Never stop just to ask permission to continue ("say go when you want me to draft
 commit?", "shall I write the code?", "refactor? none"). Formatting and tooling choices are never
 asked: use the defaults in `CLAUDE.md`.
 
+These are the stops in **build mode**, the default. A repo can switch on learning mode instead.
+
+## Learning mode
+
+For students and newcomers, who learn from every command, not just from the decisions. A repo
+switches it on with one line in its `CLAUDE.md`: "This repo runs in learning mode."
+
+In learning mode, every command is a stop — including read-only ones (listing files, checking a
+branch, querying GitHub) and small ones (creating a directory):
+
+1. **Show** the exact command.
+2. **Explain** what it does and why it is needed now — every flag and operator the first time it
+   appears. The human may ask questions.
+3. **Wait** for the human to say "run".
+4. **Run it and interpret the result:** what it shows, what matched expectations, what was
+   surprising.
+
+Closely related commands may be shown, explained and run together under one "run", as long as
+each is shown and explained. Every stop of build mode still applies on top: drafts, decisions,
+predictions, smells.
+
 ## Planning — one artifact per commit
 
 Follow the schema's artifact order: proposal → specs → design → adr → tasks. For each one the

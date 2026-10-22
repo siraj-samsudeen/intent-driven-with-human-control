@@ -34,6 +34,7 @@ build runs one test at a time, in the manner of Kent Beck's augmented coding.
 | **Every change is mandated by a test** — code, dependencies, files. Config no test can drive states `Breaks without it:`. | Nothing arrives that nobody needed. |
 | **`design.md` is a hypothesis.** When the build leads elsewhere, a `design:` commit records what changed and why. | That the plan changed, and why, is one of the most useful pages in the history. |
 | **Reconcile at the end of each change**: coverage, unused code (knip), types, mutation testing (Stryker). Every finding is ratified into the spec, deleted, or put to the human. | Agents build more than they are asked. Line coverage cannot see an untested one-line branch; mutation testing can. |
+| **Two modes.** Build mode (default) stops only for a draft, a decision, a prediction or a smell. **Learning mode** also stops before every command — even read-only ones — to show it, explain it, wait for "run", then interpret the result; related commands may share one "run". | A maintainer wants as few stops as possible; a learner learns from every command. One skill serves both. |
 | **Formats are enforced by review, not a git hook** — for now. | We will learn which fields hold up after 100–200 commits, then decide what to enforce. |
 
 The process itself lives in [`.agents/skills/outside-in-tdd/SKILL.md`](.agents/skills/outside-in-tdd/SKILL.md);
