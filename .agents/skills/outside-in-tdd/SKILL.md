@@ -1,6 +1,6 @@
 ---
 name: outside-in-tdd
-description: The human-controlled build loop for an OpenSpec change — one planning artifact per commit, then one stop per test (the human's prediction) with red, green and refactor as separate commits that record the human's prediction and the real output. Use for every change: planning artifacts, code, tests, dependencies and config.
+description: The human-controlled build loop for an OpenSpec change — one planning artifact per commit, then one stop per test (the human's prediction) with red, green and refactor as separate commits that record the human's prediction and the real output. Use for every change in build or learning mode (schema intent-driven-with-human-control): planning artifacts, code, tests, dependencies and config. Not for autopilot changes.
 ---
 
 # Outside-in TDD with the human in control
@@ -33,12 +33,14 @@ Never stop just to ask permission to continue ("say go when you want me to draft
 commit?", "shall I write the code?", "refactor? none"). Formatting and tooling choices are never
 asked: use the defaults in `CLAUDE.md`.
 
-These are the stops in **build mode**, the default. A repo can switch on learning mode instead.
+These are the stops in **build mode**, the default. A change can be created in learning mode
+instead. (A third mode, **autopilot**, does not use this skill — see `CLAUDE.md` § Modes.)
 
 ## Learning mode
 
-For students and newcomers, who learn from every command, not just from the decisions. A repo
-switches it on with one line in its `CLAUDE.md`: "This repo runs in learning mode."
+For students and newcomers, who learn from every command, not just from the decisions. It is
+chosen per change, when the change is created, and recorded as `**Mode:** learning` on the first
+line of its `proposal.md`. It starts with the very first command of that change.
 
 In learning mode, every command is a stop — including read-only ones (listing files, checking a
 branch, querying GitHub) and small ones (creating a directory):
@@ -194,7 +196,8 @@ fates — **ratify** (a `specs:` commit adds the scenario, then a test pins it),
 - `bunx tsc --noEmit` — types.
 - Stryker — every surviving mutant is a missing test or code nobody needs.
 
-Then `openspec verify`, and archive.
+Then `openspec verify`, and open the implementation PR. Archive runs on `main` after that PR
+merges (`openspec-git-discipline`).
 
 ## Tooling gotchas (Bun 1.4.2, verified 21-Oct-2026)
 

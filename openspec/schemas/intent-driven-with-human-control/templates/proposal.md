@@ -1,3 +1,5 @@
+**Mode:** build <!-- build or learning, as chosen when the change was created (CLAUDE.md § Modes) -->
+
 ## Why
 
 <!-- Explain the motivation for this change. What problem does this solve? Why now? -->
