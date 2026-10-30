@@ -30,6 +30,8 @@ of the template's files:
 
 The human names the mode when asking for the change ("new change add-login, learning mode").
 If they do not, use build and say so in the same message as the first draft, so they can switch.
+For the `openspec-new-change` and `openspec-propose` skills, "autopilot" counts as the human
+naming the `intent-driven` schema, so pass `--schema intent-driven`.
 The mode is recorded twice, so any agent resuming the change knows it: the schema in the change's
 `.openspec.yaml` (`openspec status --change <name>` prints it) and the first line of
 `proposal.md` (`**Mode:** autopilot | build | learning`). Mode-specific lines in
