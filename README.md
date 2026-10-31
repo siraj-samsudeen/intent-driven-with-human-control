@@ -46,7 +46,7 @@ Change an answer with `uvx copier update --trust --defaults --data <answer>=<val
 What a project gets: `.agents/`, `.claude/`, `.opencode/`, `openspec/`, `AGENTS.md`,
 `CLAUDE.md`, `scripts/create-labels.sh`, `skills-lock.json`, plus `.gitignore` and
 `opencode.json` when it has none. This README, the licence and `INSTALL_TEMPLATE.md` (upstream's
-OpenCode install guide) stay here. A project adds its own facts under `## Project` in `CLAUDE.md`
+OpenCode install guide) stay here. A project adds its own rules under `## Project` at the end of `AGENTS.md`
 and in `context:` in `openspec/config.yaml`; a change to the shared process is made here, then
 pulled.
 
