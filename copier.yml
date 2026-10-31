@@ -1,0 +1,76 @@
+# Install into a project:     copier copy --trust gh:siraj-samsudeen/intent-driven-with-human-control <folder>
+# Pull a newer version later:  copier update --trust      (a 3-way merge; conflicts show inline)
+# Change one answer:           copier update --trust --defaults --data <question>=<value>
+#
+# The answers below are the only project-specific values. They are written to
+# .copier-answers.yml, which the skills read at run time, so no skill is edited per project.
+
+_min_copier_version: "9.4"
+_answers_file: .copier-answers.yml
+_templates_suffix: .jinja
+_preserve_symlinks: true # .claude/skills/* link to .agents/skills/*
+
+# Template-repo files that a project does not get. Copier's own defaults are repeated, because
+# setting _exclude replaces them.
+_exclude:
+  - copier.yml
+  - copier.yaml
+  - "~*"
+  - "*.py[co]"
+  - __pycache__
+  - .git
+  - .DS_Store
+  - .svn
+  - README.md # this template's own README; the project keeps its own
+  - INSTALL_TEMPLATE.md
+  - LICENSE.md
+  - package.json
+  - package-lock.json
+  - .github/PULL_REQUEST_TEMPLATE.md
+
+# Files a project usually has already. Copied only when missing; never overwritten.
+_skip_if_exists:
+  - .gitignore
+  - opencode.json
+
+repo:
+  type: str
+  help: GitHub repository, as owner/name (issues, labels and PRs go here)
+  validator: "{% if repo.count('/') != 1 or ' ' in repo %}Use owner/name, for example siraj-samsudeen/featherbase{% endif %}"
+
+extra_labels:
+  type: yaml
+  help: >-
+    Labels this project adds to the shared ones (red, yellow, green, chore), as a YAML list,
+    for example [{name: "area:web", color: "1d76db", description: "Applied from file paths"}]
+  default: []
+
+acceptance_stack:
+  type: str
+  help: Acceptance-test stack (cucumber-js or behave)
+  choices:
+    - javascript
+    - python
+  default: javascript
+
+desktop_first:
+  type: bool
+  help: Build and check UI for desktop first, with phone work only when a piece of work asks for it?
+  default: true
+
+ui_verifier_width:
+  type: int
+  help: Screen width in pixels at which the UI verifier checks the built UI
+  default: 1280
+
+screenshots_in_prs:
+  type: bool
+  help: Put the UI verifier's screenshots in PR bodies?
+  default: false
+
+adr_dir:
+  type: str
+  help: >-
+    Folder for ADRs. Keep "adr" (the upstream schema's place); change it only for a project that
+    cannot move its ADRs yet
+  default: adr
