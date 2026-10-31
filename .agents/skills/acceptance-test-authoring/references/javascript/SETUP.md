@@ -11,21 +11,17 @@ Copy into `acceptance-tests/` at the repo root. Destination filenames are load-b
 | `javascript/extract-gherkin.cjs` | `extract-gherkin.cjs` | `cucumber.cjs` requires it as `./extract-gherkin.cjs` |
 | `javascript/cucumber.cjs` | `cucumber.cjs` | cucumber-js discovers its configuration by this exact name |
 | `javascript/openspec-effective-paths.cjs` | `openspec-effective-paths.cjs` | required by `cucumber.cjs` under this name |
-| `../gherkin-lintrc.json` | `.gherkin-lintrc` | gherkin-lint auto-discovers this name and has no built-in defaults |
-
-The fourth file is from the shared `references/` root, not this folder.
 
 ## Project Setup
 
 `acceptance-tests/` is an independent Node project with its own `package.json`. Its hooks boot the application before the suite and shut it down after, so the suite runs with one command.
 
-devDependencies: `@cucumber/cucumber`, `glob`, `cheerio`, `gherkin-lint`.
+devDependencies: `@cucumber/cucumber` (^13.3), `glob` (^14), `cheerio`, and `playwright` pinned to the exact version the project already uses, so the browsers it downloads match. No spec linter (the skill's "No Separate Spec Lint").
 
 ```json
 "scripts": {
   "test": "cucumber-js",
-  "test:specs": "cucumber-js -p specs",
-  "lint:specs": "node extract-gherkin.cjs && gherkin-lint .extracted"
+  "test:specs": "cucumber-js -p specs"
 }
 ```
 
@@ -52,12 +48,6 @@ For a name-level parity diff against another stack, read `testCase` envelopes, n
 npx cucumber-js --dry-run -f message | \
   node -e "let p={},s=[];require('readline').createInterface({input:process.stdin}).on('line',l=>{try{const m=JSON.parse(l);if(m.pickle)p[m.pickle.id]=m.pickle.name;if(m.testCase)s.push(m.testCase.pickleId)}catch{}}).on('close',()=>console.log(s.map(i=>p[i]).sort().join('\\n')))"
 ```
-
-## Linting
-
-Pass `.extracted` as a directory argument. A quoted `'**'` glob silently matches nothing through the dot-directory. Reported line numbers are valid in source `spec.md`.
-
-Known limitation: gherkin-lint's AST rules do not descend into `Rule:` children, so `no-unnamed-scenarios` misses scenarios nested under a Rule. Line-based rules and feature-level rules work.
 
 ## Page Object Model
 
