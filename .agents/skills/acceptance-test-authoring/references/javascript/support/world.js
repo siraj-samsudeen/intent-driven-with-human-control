@@ -19,6 +19,10 @@ const { ADMIN, api, disposeApi, signedInState } = require('./auth');
 const HEADED = process.env.HEADED === '1';
 const PWDEBUG = Boolean(process.env.PWDEBUG) && process.env.PWDEBUG !== '0';
 const VIDEO = process.env.VIDEO === '1';
+// How slow a VIDEO=1 run is, in ms per browser action.
+const VIDEO_SLOWMO = Number(process.env.VIDEO_SLOWMO ?? 400);
+// Step captions over the pages, only when recording review videos.
+const { showCaption } = VIDEO ? require('./captions') : { showCaption: null };
 setDefaultTimeout(PWDEBUG ? -1 : HEADED || VIDEO ? 300_000 : 60_000);
 
 // In CI (or with TRACE=1) every context is traced; a failed scenario's traces
@@ -48,7 +52,7 @@ let browser = null;
 function launchOptions() {
   if (PWDEBUG) return { headless: false }; // the Inspector does the pausing
   if (HEADED) return { headless: false, slowMo: 400 };
-  if (VIDEO) return { headless: true, slowMo: 400 };
+  if (VIDEO) return { headless: true, slowMo: VIDEO_SLOWMO };
   return { headless: true };
 }
 
@@ -69,13 +73,14 @@ class AcceptanceWorld {
   constructor({ attach }) {
     this.attach = attach;
     this.viewport = DESKTOP;
-    this.scenario = null; // { order, slug }, set before each scenario
+    this.scenario = null; // { order, slug, name }, set before each scenario
     this.pages = new Map(); // who ('the user', 'a colleague') -> page
-    this.contexts = []; // { who, context, page } for every browser context opened, in order
+    this.contexts = []; // { who, label, context, page } for every browser context opened, in order
+    this.caption = null; // VIDEO=1: the step being run, as written
   }
 
   /** A browser context for one of the scenario's people: traced, and recorded with VIDEO=1. */
-  async newPage(who, storageState) {
+  async newPage(who, label, storageState) {
     const context = await (await launch()).newContext({
       baseURL: BASE_URL,
       storageState,
@@ -84,7 +89,11 @@ class AcceptanceWorld {
     });
     if (TRACE) await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
     const page = await context.newPage();
-    this.contexts.push({ who, context, page });
+    if (showCaption) {
+      // A page opened mid-scenario, or one that navigates, shows the current step too.
+      page.on('domcontentloaded', () => showCaption(page, this.caption));
+    }
+    this.contexts.push({ who, label, context, page });
     return page;
   }
 
@@ -92,7 +101,7 @@ class AcceptanceWorld {
   async signedIn(who, { user, password } = ADMIN) {
     if (this.pages.has(who)) return this.pages.get(who);
     if (!signedInStates.has(user)) signedInStates.set(user, await signedInState(user, password));
-    const page = await this.newPage(slug(who), signedInStates.get(user));
+    const page = await this.newPage(slug(who), who, signedInStates.get(user));
     this.pages.set(who, page);
     return page;
   }
@@ -100,9 +109,14 @@ class AcceptanceWorld {
   /** A page for someone not signed in: the only way a sign-in scenario starts. */
   async signedOut(who = 'visitor') {
     if (this.pages.has(who)) return this.pages.get(who);
-    const page = await this.newPage(slug(who));
+    const page = await this.newPage(slug(who), who);
     this.pages.set(who, page);
     return page;
+  }
+
+  /** The scenario's open pages (captions.js puts each step's caption on all of them). */
+  openPages() {
+    return [...this.pages.values()];
   }
 
   /** Every page of this scenario, open now or later, is on a phone-sized screen. */
@@ -131,7 +145,7 @@ BeforeAll(function () {
 
 Before(function ({ pickle }) {
   scenarioCount += 1;
-  this.scenario = { order: String(scenarioCount).padStart(2, '0'), slug: slug(pickle.name) };
+  this.scenario = { order: String(scenarioCount).padStart(2, '0'), slug: slug(pickle.name), name: pickle.name };
 });
 
 After(async function ({ result }) {
@@ -144,7 +158,7 @@ After(async function ({ result }) {
   }
   // "<slug>" when the scenario opened one browser, "<slug>-<who>" for each when more.
   const name = (who) => (this.contexts.length > 1 ? `${this.scenario.slug}-${who}` : this.scenario.slug);
-  for (const { who, context, page } of this.contexts) {
+  for (const { who, label, context, page } of this.contexts) {
     if (TRACE && failed) {
       fs.mkdirSync(TRACES, { recursive: true });
       await context.tracing.stop({ path: path.join(TRACES, `${name(who)}.zip`) });
@@ -154,8 +168,12 @@ After(async function ({ result }) {
     const video = VIDEO ? page.video() : null;
     await context.close();
     if (video) {
-      await video.saveAs(path.join(VIDEOS, `${this.scenario.order}-${name(who)}.webm`));
+      const file = `${this.scenario.order}-${name(who)}.webm`;
+      await video.saveAs(path.join(VIDEOS, file));
       await video.delete();
+      // What `npm run video:journey` puts on each clip's title card.
+      const entry = { file, order: this.scenario.order, scenario: this.scenario.name, who: label };
+      fs.appendFileSync(path.join(VIDEOS, 'clips.jsonl'), `${JSON.stringify(entry)}\n`);
     }
   }
 });

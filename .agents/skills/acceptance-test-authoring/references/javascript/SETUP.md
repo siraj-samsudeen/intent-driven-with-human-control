@@ -19,6 +19,8 @@ Then copy these starting points into `acceptance-tests/support/` and fill in the
 | `javascript/support/stack.js` | `support/stack.js` | Boots the app on its own database and ports (`ACCEPTANCE_API_PORT`, `ACCEPTANCE_WEB_PORT`), so it runs beside the dev server and other worktrees; refuses to start, naming the port, while another run holds them |
 | `javascript/support/auth.js` | `support/auth.js` | People start signed in: a Playwright `storageState` from the same request the sign-in form makes, so the form is typed only in sign-in scenarios; one API session per run for setup |
 | `javascript/support/world.js` | `support/world.js` | The World: one browser context per person, desktop at the answers' `ui_verifier_width`, `usePhone()`, a screenshot of every failed scenario, and the watching and debugging switches below |
+| `javascript/support/captions.js` | `support/captions.js` | `VIDEO=1` only: each step's text as a caption over every open page, a hold after each Then, and a pulsing dot so Playwright keeps recording (it records frames only on repaint, so a still page's pause and a clip's end were cut). Copy verbatim |
+| `javascript/scripts/video-journey.cjs` | `scripts/video-journey.cjs` | `npm run video:journey`: joins the last `VIDEO=1` run's clips into one `reports/videos/journey.mp4`. Copy verbatim |
 
 `acceptance-tests/.gitignore`: `node_modules/`, `.extracted/`, `reports/`.
 
@@ -31,7 +33,8 @@ devDependencies: `@cucumber/cucumber` (^13.3), `glob` (^14), `cheerio`, and `pla
 ```json
 "scripts": {
   "test": "cucumber-js",
-  "test:specs": "cucumber-js -p specs"
+  "test:specs": "cucumber-js -p specs",
+  "video:journey": "node scripts/video-journey.cjs"
 }
 ```
 
@@ -61,16 +64,26 @@ npx cucumber-js --dry-run -f message | \
 
 ## Watching And Debugging
 
-For a person at their own screen; agents and CI set none of these, and browser checks run headless.
+For a person at their own screen; agents and CI set none of these, and browser checks run headless. Videos are never recorded by default: a person asks for a `VIDEO=1` run.
 
 | Setting | What it does |
 | --- | --- |
 | `HEADED=1` | A visible browser, slowed down so each action can be followed. |
 | `PWDEBUG=1` | Playwright's Inspector (headed), pausing before each action; no step timeout. |
 | `VIDEO=1` | A slowed-down, headless video of every scenario, one per person's browser: `reports/videos/<NN>-<scenario>[-<who>].webm`, numbered in run order. Only a `VIDEO=1` run replaces the videos, so a later plain run leaves the ones to review. A change's scenarios run in its proposal's capability order (COMPOSITION.md), so the videos play the way a person meets the feature. |
+| `VIDEO_SLOWMO=<ms>` | How slow a `VIDEO=1` run is, per browser action (default 400). |
 | `TRACE=1` | Traces every browser; a failed scenario keeps `reports/traces/<scenario>[-<who>].zip`. On in CI by default. Open one with `npx --prefix acceptance-tests playwright show-trace <zip>`. |
 
-The owner watches the `VIDEO=1` videos before a change is archived (the `change-modes` skill).
+With `VIDEO=1`, each step's text shows as a caption at the top of every page, and each Then holds for 1.5s so its result can be seen. To watch a whole change as one video:
+
+```sh
+VIDEO=1 npm --prefix acceptance-tests test
+npm --prefix acceptance-tests run video:journey
+```
+
+`video:journey` joins the last `VIDEO=1` run's clips, in run order, into `reports/videos/journey.mp4`, each after a 2-second title card "NN · scenario — who"; phone clips are padded onto the desktop canvas (`ui_verifier_width` × 900). It needs a working ffmpeg (`FFMPEG=<path>`, else `ffmpeg` on `PATH`, else `/opt/homebrew/bin/ffmpeg`) and says so when there is none.
+
+The owner watches the videos before a change is archived (the `change-modes` skill).
 
 ## CI
 
