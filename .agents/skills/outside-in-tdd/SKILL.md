@@ -1,6 +1,6 @@
 ---
 name: outside-in-tdd
-description: The human-controlled build loop for an OpenSpec change — one planning artifact per commit, then one stop per test (the human's prediction) with red, green and refactor as separate commits that record the human's prediction and the real output. Use for every change in build or learning mode (schema intent-driven-with-human-control): planning artifacts, code, tests, dependencies and config. Not for autopilot changes.
+description: The human-controlled build loop for an OpenSpec change — one planning artifact per commit, then one stop per test (the human's prediction) with red, green and refactor as separate commits that record the human's prediction and the real output. Use whenever the session builds a change in build or learning mode (the mode is session state, the change-modes skill): planning artifacts, code, tests, dependencies and config. Not while the session is in autopilot.
 ---
 
 # Outside-in TDD with the human in control
@@ -31,16 +31,15 @@ Stop only when the stop has content the human can change:
 
 Never stop just to ask permission to continue ("say go when you want me to draft X", "shall I
 commit?", "shall I write the code?", "refactor? none"). Formatting and tooling choices are never
-asked: use the defaults in `CLAUDE.md`.
+asked: use the defaults in the `change-modes` skill.
 
 These are the stops in **build mode**, the default. A change can be created in learning mode
-instead. (A third mode, **autopilot**, does not use this skill — see `CLAUDE.md` § Modes.)
+instead. (A third mode, **autopilot**, does not use this skill — see the `change-modes` skill.)
 
 ## Learning mode
 
 For students and newcomers, who learn from every command, not just from the decisions. It is
-chosen per change, when the change is created, and recorded as `**Mode:** learning` on the first
-line of its `proposal.md`. It starts with the very first command of that change.
+chosen in the session (never recorded in the change) and applies from the next command on.
 
 In learning mode, every command is a stop — including read-only ones (listing files, checking a
 branch, querying GitHub) and small ones (creating a directory):
@@ -67,13 +66,21 @@ Then the agent drafts the next one without asking.
 <artifact>: <change-name> — <one line on what it settles>
 ```
 
-`tasks.md` is the test list (see the schema). `design.md` is a hypothesis: when the build leads
+`tasks.md` is upstream's list, written by `spec-as-source` the same way in every mode, so a
+switch to or from autopilot changes no task. `design.md` is a hypothesis: when the build leads
 somewhere else, a later `design:` commit records what changed and why.
 
 ## Building — one stop per test
 
-Take the next unticked task in order. Follow the `test-driven-development` skill for the shape
-of each test; this skill adds the stops and the record.
+Work down `tasks.md` in order. Follow the `test-driven-development` skill for the shape of each
+test; this skill adds the stops and the record.
+
+**Reading upstream's task list as a test list.** Each step-definition task is an outer test: a
+scenario's step, run by the acceptance runner. The first-time setup tasks are not done on their
+own: the `acceptance-tests/` setup arrives in the red/green of the first outer test that needs
+it, and each setup task is ticked when that pair delivers it. The inner tests the design needs
+are not in the list up front. Add each one, when it is discovered, right under the outer task it
+serves, as `- [ ] X.Y.Z (added) inner: <behaviour>`, and tick it after its green.
 
 1. **Show the test** and why it is next, **and ask for the prediction in the same message** —
    answering it also approves the test (or the human edits the test instead).
@@ -93,14 +100,17 @@ of each test; this skill adds the stops and the record.
    code, ask the human to predict the suite result first.
 7. **Refactor** only when there is a smell: name it and let the human decide. No smell, no stop. A refactor is its own
    `refactor:` commit: structure only, no assertion changes, same pass count.
-8. Tick the task. Add any newly discovered inner test to `tasks.md` as `(added)`. Move to the
-   next task.
+8. Tick the task. Add any newly discovered inner test under its outer task as `(added)`. Move
+   to the next task.
 
 Tests the task list already expects to pass on their first run are run together, one `test:`
 commit each, and reported in one message.
 
-The outer test of a scenario stays `test.todo` while its inner tests run; it is promoted in its
-own green step. `bun test --todo` fails with "Remove `.todo`" once it passes — that is the cue.
+The outer test of a scenario is its fenced Gherkin in the change's `spec.md`, run from
+`acceptance-tests/` (`spec-as-source`). Its first red is usually an undefined step: the step
+definition arrives in that red/green pair, and so does the `acceptance-tests/` setup on the very
+first one. The scenario stays failing while its inner tests run, and passing it is its own green
+step.
 
 **Step size.** If the human's predictions keep matching, the steps are too small — take bigger
 ones. If they keep missing, slow down.
@@ -187,19 +197,20 @@ Ran: <exact generator or install commands>
 
 ## Reconcile — end of every change
 
-Run the checks the `## Reconcile` group in `tasks.md` lists. Every finding gets one of three
-fates — **ratify** (a `specs:` commit adds the scenario, then a test pins it), **delete**
-(`refactor:`), or **ask** (the human decides):
+When the last task is ticked, run the project's own checks for each of these. Upstream's task
+list has no group for them, so they are this skill's last step, not tasks. Every finding gets
+one of three fates — **ratify** (a `specs:` commit adds the scenario, then a test pins it),
+**delete** (`refactor:`), or **ask** (the human decides):
 
-- `bun test --coverage` — 100% of lines and functions.
-- `knip` — unused files, exports and dependencies.
-- `bunx tsc --noEmit` — types.
-- Stryker — every surviving mutant is a missing test or code nobody needs.
+- Coverage — 100% of lines and functions (Bun: `bun test --coverage`).
+- Unused files, exports and dependencies (`knip`).
+- Types (`tsc --noEmit`).
+- Mutation testing (Stryker) — every surviving mutant is a missing test or code nobody needs.
 
-Then `openspec verify`, and open the implementation PR. Archive runs on `main` after that PR
-merges (`openspec-git-discipline`).
+Then `openspec verify`, record the review videos for the owner, and archive on the change's
+branch once the owner has watched them; the owner merges (the `change-modes` skill).
 
-## Tooling gotchas (Bun 1.4.2, verified 21-Oct-2026)
+## Tooling gotchas when the project uses Bun (Bun 1.4.2, verified 21-Oct-2026)
 
 - A `coverageThreshold` failure exits 1 **with no message**, under "0 fail".
 - knip needs `"entry": ["**/*.test.ts"]` when tests are the only entry points (otherwise it
