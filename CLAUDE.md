@@ -13,6 +13,8 @@ project's own values are in `.copier-answers.yml`. Add project facts under `## P
 |---|---|
 | Modes (autopilot, build, learning), the defaults never asked, the git flow | `change-modes` skill |
 | The build loop in build and learning modes | `outside-in-tdd` skill |
+| Issues, ratings, blocked by, manager and task sessions, worktrees, the UI route | `issue-workflow` skill |
+| Creating the repo's labels | `scripts/create-labels.sh` |
 | Per-artifact rules (proposal, specs, design, adr, tasks) | `openspec/config.yaml` |
 | Reviews and finding triage | `AGENTS.md` § Review guidelines |
 
