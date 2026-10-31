@@ -1,55 +1,102 @@
 # Intent-Driven With Human Control
 
-A fork of [intent-driven-dev/intent-driven-template](https://github.com/intent-driven-dev/intent-driven-template)
-for Claude Code, with one change of philosophy: **the human approves every step**, and the git
-history records each step well enough that a reviewer — or a learner — can follow exactly how
-the code was built.
+The shared process template for all of Siraj's projects. It starts from
+[intent-driven-dev/intent-driven-template](https://github.com/intent-driven-dev/intent-driven-template)
+and changes it for Claude Code, with one change of philosophy: **the human approves every step
+that has something to decide**, and the git history records each step well enough that a
+reviewer — or a learner — can follow exactly how the code was built.
 
 The upstream template brings the human in at the beginning (intent, specs, design) and at the
-end (review); agents do the implementation in between. Here the planning is unchanged, but the
-build runs one test at a time, in the manner of Kent Beck's augmented coding.
+end (review); agents do the implementation in between. Here the planning is the same, and the
+build can run one test at a time, in the manner of Kent Beck's augmented coding. The session
+picks the mode, and can switch it at any time: **build** (the default), **learning** (build plus
+a stop before every command) or **autopilot** (the upstream flow).
 
-Each change picks its mode when it is created: **build** (the default, as above), **learning**
-(build plus a stop before every command) or **autopilot** (the upstream flow, for work the human
-does not need to follow step by step).
+## Install and update — Copier
+
+Projects are linked to this template through [Copier](https://copier.readthedocs.io/), so a
+process improvement made here reaches every project with one command.
+
+```bash
+uvx copier copy --trust gh:siraj-samsudeen/intent-driven-with-human-control <project-folder>
+```
+
+```bash
+uvx copier update --trust
+```
+
+`copier copy` asks the questions below and writes the answers to `.copier-answers.yml`.
+`copier update` brings the project to the template's newest tag with a 3-way merge: the
+project's own edits are kept, and a clash shows as a conflict to resolve. Copier takes the newest
+tag, so a change here reaches projects once it is tagged (`git tag -a vX.Y.Z`, then push the tag).
+`--trust` is needed because `copier.yml` sets template options; nothing runs on install.
+
+| Answer | Default | Read by |
+|---|---|---|
+| `repo` — GitHub `owner/name` | (asked) | `issue-workflow`, `scripts/create-labels.sh` |
+| `extra_labels` — labels beyond red/yellow/green/chore | `[]` | `scripts/create-labels.sh` |
+| `acceptance_stack` — `javascript` or `python` | `javascript` | `stack:` in `openspec/config.yaml` |
+| `desktop_first` | `true` | `issue-workflow` § UI route |
+| `ui_verifier_width` | `1280` | `issue-workflow` § UI route |
+| `screenshots_in_prs` | `false` | `issue-workflow` § UI route |
+| `adr_dir` | `adr` | `openspec/config.yaml`, `change-modes` |
+
+Change an answer with `uvx copier update --trust --defaults --data <answer>=<value>`.
+
+What a project gets: `.agents/`, `.claude/`, `.opencode/`, `openspec/`, `AGENTS.md`,
+`CLAUDE.md`, `scripts/create-labels.sh`, `skills-lock.json`, plus `.gitignore` and
+`opencode.json` when it has none. This README, the licence and `INSTALL_TEMPLATE.md` (upstream's
+OpenCode install guide) stay here. A project adds its own facts under `## Project` in `CLAUDE.md`
+and in `context:` in `openspec/config.yaml`; a change to the shared process is made here, then
+pulled.
+
+## Where the process lives
+
+| What | Where |
+|---|---|
+| Modes, defaults never asked, the git flow (one worktree, branch and PR per change) | [`change-modes`](.agents/skills/change-modes/SKILL.md) |
+| The build loop in build and learning modes | [`outside-in-tdd`](.agents/skills/outside-in-tdd/SKILL.md) |
+| Issues, ratings, blocked by, manager and task sessions, worktrees, the UI route | [`issue-workflow`](.agents/skills/issue-workflow/SKILL.md) |
+| Per-artifact rules: proposal, specs, design, adr, tasks | [`openspec/config.yaml.jinja`](openspec/config.yaml.jinja) |
+| Reviews and finding triage | [`AGENTS.md`](AGENTS.md) § Review guidelines |
+| The schema | [`openspec/schemas/intent-driven/`](openspec/schemas/intent-driven/), upstream's, unchanged |
 
 ## Sources
 
 1. **Intent-driven template** — everything upstream: the OpenSpec `proposal → specs → design →
-   adr → tasks` workflow, Gherkin-style scenarios, and its skills and agents. Kept as is.
+   adr → tasks` workflow, its schema (from
+   [intent-driven-dev/openspec-schemas](https://github.com/intent-driven-dev/openspec-schemas)),
+   and its skills and agents. Kept as is, so upstream updates merge cleanly.
 2. **Kent Beck, [Augmented Coding: Beyond the Vibes](https://tidyfirst.substack.com/p/augmented-coding-beyond-the-vibes)**
    (25-Jun-2025) — the human says "go" and the agent takes the next test from the plan; Tidy
    First (structural changes in their own commits); and his warning signs: loops, functionality
    nobody asked for, tests disabled or deleted.
+3. **Featherbase** — the process the owner settled while building it: ratings, the issue body,
+   manager and task sessions, the UI route, the spec and design rules.
 
 ## What we changed, and why
 
 | Change | Why |
 |---|---|
-| **The human controls every step that has something to decide**, planning and build alike (build and learning modes). Planning: the agent drafts each artifact, the human reviews and edits, one commit per artifact. | The person working with the agent must understand and own every step, not just the result. |
-| **The agent stops only when the stop has content** — a draft, a real decision, a prediction, a named smell. Never "say go", "shall I commit?", "shall I write the code?". Formatting and tooling choices have defaults and are never asked. | A stop that only asks permission gets approved by reflex and wears down attention for the stops that matter. |
-| **A change reaches `main` in two PRs — the upstream `openspec-git-discipline`.** The proposal (planning artifacts) merges first; the implementation follows in a second PR; archive runs on `main` after it merges. Replaces our earlier one-PR rule. The agent still commits each approved step and opens each PR without asking; merging is the human's. | Proposals in progress are visible on `main`, so others can see and comment on what is planned before it is built. |
-| **`tasks.md` is the test list** — one group per scenario, the outer acceptance test first, then the inner tests; no setup tasks. | It is Beck's `plan.md`. Setup that arrives with the test that needs it can be traced to that test; setup planned up front cannot. |
-| **One stop per test** — the human's prediction — with **red, green and refactor as separate commits**. | Each step can be checked out and replayed. A combined commit cannot show that the test failed first, or how. |
-| **We commit the red** — unlike Beck, who commits only when all tests pass. | The failing test, the prediction and the real failure are the record we want. |
-| **The commit message carries what the code cannot show** — the command run, the prediction, the actual output, what was deliberately not built. | Diffs show what changed, never why or how it was decided. A separate diary drifts and costs more than a commit message. |
-| **The human predicts every red; the agent predicts only when the human says "don't know"** (with a reason). A match is one line; a mismatch is recorded with why. | The human's prediction is the moment they model the system instead of watching it. The agent's prediction is almost always right and almost never informative — recorded every time, it buries the lines that matter. |
-| **Prediction accuracy sets the step size.** | Predictions that always match mean the steps are too small; frequent misses mean slow down. |
+| **Upstream's `intent-driven` schema, unchanged.** No schema of our own and no patch to upstream's; our rules live in `openspec/config.yaml` and skills. | Upstream updates pull cleanly. An earlier fork of the schema had to be merged by hand. |
+| **The mode belongs to the session, never to the change.** Autopilot, build and learning use the same planning artifacts and the same task list; switching changes no file. | The owner switches mode mid-change, depending on how much of a hurry he's in. Recording the mode in the change made each switch rewrite planning files. |
+| **The human controls every step that has something to decide**, planning and build alike (build and learning modes). The agent drafts each artifact, the human reviews and edits, one commit per artifact. | The person working with the agent must understand and own every step, not just the result. |
+| **The agent stops only when the stop has content** — a draft, a real decision, a prediction, a named smell. Never "say go", "shall I commit?". Formatting and tooling choices have defaults and are never asked. | A stop that only asks permission gets approved by reflex and wears down attention for the stops that matter. |
+| **Fenced Gherkin in every mode** (`spec-as-source`); the acceptance runner's own parse is the spec check (no gherkin-lint: [intent-driven-template#9](https://github.com/intent-driven-dev/intent-driven-template/issues/9)). | Specs are written the same way whatever the mode, and every scenario is tied to the test that runs it. |
+| **Spec rules**: requirements in the order a person meets them, the common case before edge cases, one example running through every scenario, scenario names that say what the user sees, an independent MECE review before approval. Proposals list capabilities in journey order, and the suite runs and records videos in that order. | Specs are read by product people. Review videos should play the way a person meets the feature. |
+| **`design.md` holds only real decisions** — a real alternative, and costly if wrong — each approved by the owner on its own. | A design padded with the spec restated hides the decisions that need judgement. |
+| **ADRs follow upstream's rule**: top-level `adr/`, never edited once accepted, superseded by a new ADR. | Nothing in the schema is patched, and an ADR's history stays readable. |
+| **One issue, one worktree, one branch, one PR per change**, from proposal to archive. The manager session stays on `main`; each issue's task session works in its own worktree with its own ports and database. Archive after the owner watches the review videos; then the owner merges with a merge commit. Replaces upstream's two-PR flow. | The owner sees a change as one unit, and the manager keeps working on `main` while workers build. |
+| **Issues carry a rating** (`red`, `yellow`, `green`, `chore`; `scripts/create-labels.sh`) on their first line, with "blocked by" as GitHub's native dependency, and go one at a time per worker. | Urgency and what an issue waits on are visible at a glance. |
+| **UI changes take the UI route**: mockups, a numbered checklist in the issue, then an independent verifier at the answers' width, desktop first. | The owner agrees what he sees, and the build is checked against it by someone who didn't build it. |
+| **In build mode, upstream's task list is the test list.** Step-definition tasks are the outer tests; setup arrives with the first test that needs it; inner tests are added as `(added)`. | Beck's `plan.md`, without a task format of our own. |
+| **One stop per test** — the human's prediction — with **red, green and refactor as separate commits**, and every red run committed with `Ran:`, `Predict:`, `Actual:` and `Mandates:`. | Each step can be checked out and replayed; the chain of failures shows why each package, file and stub exists. |
+| **The human predicts every red; the agent predicts only when the human says "don't know"**. Prediction accuracy sets the step size. | The human's prediction is the moment they model the system instead of watching it. |
 | **Every change is mandated by a test** — code, dependencies, files. Config no test can drive states `Breaks without it:`. | Nothing arrives that nobody needed. |
-| **`design.md` is a hypothesis.** When the build leads elsewhere, a `design:` commit records what changed and why. | That the plan changed, and why, is one of the most useful pages in the history. |
-| **Reconcile at the end of each change**: coverage, unused code (knip), types, mutation testing (Stryker). Every finding is ratified into the spec, deleted, or put to the human. | Agents build more than they are asked. Line coverage cannot see an untested one-line branch; mutation testing can. |
-| **Every red run is a commit**, `red: <behaviour> (run N)`, with `Ran:`, `Predict:`, `Actual:` and `Mandates:` — including runs that fail for the wrong reason. | The chain of failures shows why each package, file and stub exists; only the last run is the "right" red. |
-| **`grill-me` on every planning artifact** — one decision per question, showing the text it will write into the artifact, with the alternatives. | The human settles each decision while reading the actual wording; a bulk draft hides the decisions that matter. |
-| **Three modes, chosen per change when it is created** (not per repo). **Autopilot** is the upstream flow: the human reviews the planning artifacts; the build runs through the `senior-dev` and `senior-qa` subagents with acceptance tests first (`spec-as-source`), parallel worktrees allowed — `openspec new change <name> --schema intent-driven`. **Build** (default) stops only for a draft, a decision, a prediction or a smell. **Learning** also stops before every command — even read-only ones — to show it, explain it, wait for "run", then interpret the result; related commands may share one "run". The proposal's first line, `**Mode:**`, records the choice. See `CLAUDE.md` § Modes. | Not every change needs the human at every step: routine work can run on autopilot, a maintainer wants few stops, a learner learns from every command. Before, acceptance-first never ran on Claude Code, because `spec-as-source` and the subagent routing were commented out; autopilot turns them on for its changes only. |
-| **Adversarial authoring on Claude Code uses the Codex CLI as the reviewer** when it is installed, otherwise a different Claude model than the author — and runs only when the human agrees, proposed when the agent judges the work complex or critical (security, permissions, data). | A Claude Code subagent can only run Claude models, so the upstream cross-model council would collapse to one family. Running it on every artifact costs more than it finds. |
-| **Review guidelines in `AGENTS.md`**: Codex reviews locally if available, otherwise another Claude model; at most 3 rounds, then the human decides; every finding triaged — fix now (breaks core functionality), fix if cheap or one issue (plausible, limited impact), or one line under "Deliberately not handled" (rare or theoretical). | The product evolves fast: fitting the need matters more than perfect code. Without a cap and a triage, reviews keep finding theoretical edge cases and each one turns into code or an issue. |
-| **Formats are enforced by review, not a git hook** — for now. | We will learn which fields hold up after 100–200 commits, then decide what to enforce. |
-
-The process itself lives in [`.agents/skills/outside-in-tdd/SKILL.md`](.agents/skills/outside-in-tdd/SKILL.md);
-the build-phase changes to the schema in
-[`openspec/schemas/intent-driven-with-human-control/`](openspec/schemas/intent-driven-with-human-control/).
-Claude Code wiring: `CLAUDE.md`, `.claude/skills/` (links to the upstream skills, plus a Claude
-Code version of `adversarial-authoring`) and `.claude/agents/`.
+| **Reconcile at the end of each change**: coverage, unused code, types, mutation testing. Every finding is ratified into the spec, deleted, or put to the human. | Agents build more than they are asked. |
+| **`grill-me` on every planning artifact** — one decision per question, showing the text it will write. | The human settles each decision while reading the actual wording. |
+| **Adversarial authoring on Claude Code uses the Codex CLI as the reviewer** when installed, otherwise a different Claude model — only with the human's consent. | A Claude Code subagent can only run Claude models. Running it on every artifact costs more than it finds. |
+| **Review guidelines in `AGENTS.md`**: at most 3 rounds; every finding triaged — fix now, fix if cheap or one issue, or one line under "Deliberately not handled". | Without a cap and a triage, reviews keep finding theoretical edge cases. |
 
 ---
 
