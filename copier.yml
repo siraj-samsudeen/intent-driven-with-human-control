@@ -11,7 +11,8 @@ _templates_suffix: .jinja
 _preserve_symlinks: true # .claude/skills/* link to .agents/skills/*
 
 # Template-repo files that a project does not get. Copier's own defaults are repeated, because
-# setting _exclude replaces them.
+# setting _exclude replaces them. A leading / anchors a pattern to the root: without it,
+# README.md would also drop every skill's and schema's README.
 _exclude:
   - copier.yml
   - copier.yaml
@@ -21,12 +22,12 @@ _exclude:
   - .git
   - .DS_Store
   - .svn
-  - README.md # this template's own README; the project keeps its own
-  - INSTALL_TEMPLATE.md
-  - LICENSE.md
-  - package.json
-  - package-lock.json
-  - .github/PULL_REQUEST_TEMPLATE.md
+  - /README.md # this template's own README; the project keeps its own
+  - /INSTALL_TEMPLATE.md
+  - /LICENSE.md
+  - /package.json
+  - /package-lock.json
+  - /.github/PULL_REQUEST_TEMPLATE.md
 
 # Files a project usually has already. Copied only when missing; never overwritten.
 _skip_if_exists:
