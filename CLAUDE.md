@@ -5,7 +5,8 @@
 The shared process comes from the template
 [siraj-samsudeen/intent-driven-with-human-control](https://github.com/siraj-samsudeen/intent-driven-with-human-control),
 through Copier. Change it in the template and pull it with `copier update`, not here; the
-project's own values are in `.copier-answers.yml`. Add project facts under `## Project` below.
+project's own values are in `.copier-answers.yml`. Add the project's own rules under `## Project`
+at the end of `AGENTS.md`, which every agent reads, Codex included.
 
 ## Where the process lives
 
@@ -31,3 +32,5 @@ On Claude Code, `adversarial-authoring` uses the Codex CLI as the reviewer when 
 otherwise a different Claude model than the author, and runs only when the human agrees to it.
 
 ## Project
+
+The project's own rules are in `AGENTS.md` § Project, so Codex reads them too.
