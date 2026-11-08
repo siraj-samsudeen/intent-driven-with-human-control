@@ -54,6 +54,17 @@ acceptance_stack:
     - python
   default: javascript
 
+acceptance_runner:
+  type: str
+  help: >-
+    What runs the specs' scenarios: binding (each scenario is a test in the project's own test
+    runner, the browser only in product tours) or bdd (cucumber-js or behave driving the browser)
+  choices:
+    - binding
+    - bdd
+  default: "{{ 'binding' if acceptance_stack == 'javascript' else 'bdd' }}"
+  validator: "{% if acceptance_runner == 'binding' and acceptance_stack != 'javascript' %}The binding runner has a reference implementation for javascript only; use bdd{% endif %}"
+
 desktop_first:
   type: bool
   help: Build and check UI for desktop first, with phone work only when a piece of work asks for it?
