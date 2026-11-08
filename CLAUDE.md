@@ -14,6 +14,8 @@ at the end of `AGENTS.md`, which every agent reads, Codex included.
 |---|---|
 | Modes (autopilot, build, learning), the defaults never asked, the git flow | `change-modes` skill |
 | The build loop in build and learning modes | `outside-in-tdd` skill |
+| Scenarios as tests (the `binding` or `bdd` runner) | `spec-as-source` skill |
+| Tours: the demo paths, the only browser tests, the demo videos | `product-tours` skill |
 | Issues, ratings, blocked by, manager and task sessions, worktrees, the UI route | `issue-workflow` skill |
 | Creating the repo's labels | `scripts/create-labels.sh` |
 | Per-artifact rules (proposal, specs, design, adr, tasks) | `openspec/config.yaml` |
