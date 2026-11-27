@@ -56,6 +56,7 @@ pulled.
 |---|---|
 | Modes, defaults never asked, the git flow (one worktree, branch and PR per change) | [`change-modes`](.agents/skills/change-modes/SKILL.md) |
 | The build loop in build and learning modes | [`outside-in-tdd`](.agents/skills/outside-in-tdd/SKILL.md) |
+| Tours: the demo paths, the only browser tests, the demo videos | [`product-tours`](.agents/skills/product-tours/SKILL.md) |
 | Issues, ratings, blocked by, manager and task sessions, worktrees, the UI route | [`issue-workflow`](.agents/skills/issue-workflow/SKILL.md) |
 | Per-artifact rules: proposal, specs, design, adr, tasks | [`openspec/config.yaml.jinja`](openspec/config.yaml.jinja) |
 | Reviews and finding triage | [`AGENTS.md`](AGENTS.md) § Review guidelines |
@@ -207,7 +208,8 @@ Standard OpenSpec lifecycle skills in `.opencode/skills/` — names are self-exp
 | `gherkin-authoring` | `.agents/skills/` | Drafts and improves Gherkin scenarios for observable, domain-language behaviour. | Required by `spec-as-source` during the `specs` phase. |
 | `glossary` | `.agents/skills/` | Maintains business and technical terminology and companion glossary references for specification artifacts. | Can be referred to under `proposal` and/or `design` rule in `openspec/config.yaml`. |
 | `openspec-git-discipline` | `.agents/skills/` | Enforces that proposals reach `main` before apply, and implementation merges before archive. | Enabled through `AGENTS.md`. |
-| `spec-as-source` | `.agents/skills/` | Adds executable acceptance specifications to the intent-driven workflow. | Explicitly opt in by uncommenting both the `specs` and `tasks` rules in `openspec/config.yaml`. |
+| `product-tours` | `.agents/skills/` | Demo-length browser tests that tell one story each and double as demo videos; the only browser tests with the `binding` runner. | Named in a change's proposal; see `openspec/config.yaml`. |
+| `spec-as-source` | `.agents/skills/` | Adds executable acceptance specifications to the intent-driven workflow, run by scenario binding or a BDD runner. | Explicitly opt in by uncommenting both the `specs` and `tasks` rules in `openspec/config.yaml`. |
 | `acceptance-test-authoring` | `.agents/skills/` | Configures the acceptance runner, extraction, linting, and step definitions for `spec-as-source`. | Required by `spec-as-source` when configuring or changing acceptance-test infrastructure. |
 | `test-driven-development` | `.agents/skills/` | Guides strict red-green-refactor TDD: one behaviour per test, minimal implementation to pass, refactoring on green, with best-practice patterns and collaborator mocking guidance. | Loaded by the `senior-dev` agent in `.opencode/agent/senior-dev.md`; enable by uncommenting the `context` lines in `openspec/config.yaml` that route src work to `senior-dev`. |
 

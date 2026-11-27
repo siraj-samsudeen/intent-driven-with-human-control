@@ -75,8 +75,8 @@ somewhere else, a later `design:` commit records what changed and why.
 Work down `tasks.md` in order. Follow the `test-driven-development` skill for the shape of each
 test; this skill adds the stops and the record.
 
-**Reading upstream's task list as a test list.** Each step-definition task is an outer test: a
-scenario's step, run by the acceptance runner. The first-time setup tasks are not done on their
+**Reading upstream's task list as a test list.** Each step-definition task (`bdd`) or scenario
+task (`binding`) is an outer test: a scenario, run by the acceptance runner. The first-time setup tasks are not done on their
 own: the `acceptance-tests/` setup arrives in the red/green of the first outer test that needs
 it, and each setup task is ticked when that pair delivers it. The inner tests the design needs
 are not in the list up front. Add each one, when it is discovered, right under the outer task it
@@ -106,11 +106,14 @@ serves, as `- [ ] X.Y.Z (added) inner: <behaviour>`, and tick it after its green
 Tests the task list already expects to pass on their first run are run together, one `test:`
 commit each, and reported in one message.
 
-The outer test of a scenario is its fenced Gherkin in the change's `spec.md`, run from
-`acceptance-tests/` (`spec-as-source`). Its first red is usually an undefined step: the step
-definition arrives in that red/green pair, and so does the `acceptance-tests/` setup on the very
-first one. The scenario stays failing while its inner tests run, and passing it is its own green
-step.
+The outer test of a scenario is its fenced Gherkin in the change's `spec.md` (`spec-as-source`).
+With the `bdd` runner it runs from `acceptance-tests/`: its first red is usually an undefined
+step, and the step definition arrives in that red/green pair, as does the `acceptance-tests/`
+setup on the very first one. With the `binding` runner it is the scenario's bound test, at the
+fastest layer that proves it (server, or component against the real server): its first red is
+the first step that fails for the right reason. Either way the scenario stays failing while its
+inner tests run, and passing it is its own green step. A tour chapter the proposal names comes
+last, as one more outer test (`product-tours`).
 
 **Step size.** If the human's predictions keep matching, the steps are too small — take bigger
 ones. If they keep missing, slow down.

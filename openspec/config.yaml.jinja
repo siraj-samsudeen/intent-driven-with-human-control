@@ -4,13 +4,17 @@
 # recorded in the change (the change-modes skill).
 schema: intent-driven
 stack: {{ acceptance_stack }}
+# binding: scenarios are tests in the project's own runner, the browser only in product tours.
+# bdd: a BDD runner in acceptance-tests/ (the spec-as-source skill, Runners).
+acceptance_runner: {{ acceptance_runner }}
 
 # Injected into every artifact's instructions, subagents included.
 context: |
   Every change is built in one of three modes, chosen in the session and
   switchable at any time; the mode is never written into the change. In every
   mode a spec's scenarios are fenced Gherkin that the acceptance runner
-  executes (spec-as-source skill); the mode decides only who builds and where
+  executes (spec-as-source skill), and the product's demo paths are tours
+  (product-tours skill); the mode decides only who builds and where
   the human stops: autopilot (subagents build), build (the default: one stop
   per test for the human's prediction, red/green/refactor as separate commits,
   outside-in-tdd skill) and learning (build, plus every command shown and
@@ -29,7 +33,8 @@ context: |
 rules:
   proposal:
     - Keep it short and say why in terms of what users get.
-    - List the capabilities (New, then Modified) in the order a person meets them in the user journey. The acceptance suite runs the change's scenarios, and records review videos, in that order.
+    - List the capabilities (New, then Modified) in the order a person meets them in the user journey. The acceptance suite runs the change's scenarios in that order.
+    - Name the tour chapter this change adds or changes, or say it touches no tour (product-tours skill).
     - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     # - Must use adversarial-authoring skill - only with the human's consent (AGENTS.md § Review guidelines)
     # - Must use glossary skill
@@ -69,6 +74,7 @@ rules:
   tasks:
     - Must use grill-me skill - one decision per question, showing the text it will write into the artifact (paraphrased is fine), with the alternatives
     - Must use spec-as-source skill - the same acceptance-test-first task list in every mode; switching mode changes no task
+    - When the proposal names a tour chapter, the last task updates it (product-tours skill)
 
 # Per-operation guidance for apply and archive.
 operations:
@@ -81,4 +87,4 @@ operations:
   archive:
     guidance:
       - Must run OpenSpec Sync before archiving
-      - Archive on the change's branch, after the owner has watched the review videos, as its last step before the PR merges
+      - Archive on the change's branch, after the owner has watched the video of the tour the change touches (or, with the bdd runner, its review videos), as its last step before the PR merges
